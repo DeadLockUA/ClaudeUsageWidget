@@ -1,4 +1,4 @@
-# GitHubUsageWidget
+# ClaudeUsageWidget
 
 A small Windows 11 taskbar widget that shows how much of your Claude subscription limits
 (the 5-hour window and the weekly limit) is left, and when you will hit the limit if you keep
@@ -35,7 +35,7 @@ Wk 18% Fri 16:19
 - The token is only read, never refreshed: Claude Code owns it. If it expires (Claude Code not
   used for a while), the strip turns grey and shows the last known values until Claude Code
   renews the token.
-- Each poll is appended to `%LOCALAPPDATA%\GitHubUsageWidget\history.jsonl` (kept 8 days).
+- Each poll is appended to `%LOCALAPPDATA%\ClaudeUsageWidget\history.jsonl` (kept 8 days).
   The pace is the change over the last hour; with less than 20 minutes of history it falls back
   to the average since the window started.
 - Windows 11 has no supported API to embed into the taskbar, so the strip is a top-most window
@@ -46,12 +46,12 @@ Wk 18% Fri 16:19
 
 ```powershell
 dotnet test
-dotnet run --project src/GitHubUsageWidget
+dotnet run --project src/ClaudeUsageWidget
 # Single-file exe:
-dotnet publish src/GitHubUsageWidget -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+dotnet publish src/ClaudeUsageWidget -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 ```
 
-`GitHubUsageWidget.exe --demo-alert` shows a sample warning popup on start.
+`ClaudeUsageWidget.exe --demo-alert` shows a sample warning popup on start.
 
 ## Repository rules
 

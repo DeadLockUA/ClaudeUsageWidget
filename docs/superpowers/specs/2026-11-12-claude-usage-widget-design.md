@@ -85,13 +85,13 @@ Windows toast), auto-closes after 2 minutes, click opens details. No popup on re
 
 ## Storage
 
-`%LOCALAPPDATA%\GitHubUsageWidget\`: `history.jsonl` (8 days), `settings.json`,
+`%LOCALAPPDATA%\ClaudeUsageWidget\`: `history.jsonl` (8 days), `settings.json`,
 `alert-state.json`, `log.txt` (errors only, capped at 1 MB).
 
 ## Stack
 
-C# / .NET 8, WPF. `GitHubUsageWidget.Core` (pure logic, unit-tested with xUnit) and
-`GitHubUsageWidget` (WPF + Win32 interop). Distributed as a framework-dependent single-file exe.
+C# / .NET 8, WPF. `ClaudeUsageWidget.Core` (pure logic, unit-tested with xUnit) and
+`ClaudeUsageWidget` (WPF + Win32 interop). Distributed as a framework-dependent single-file exe.
 
 ## Known risks
 
