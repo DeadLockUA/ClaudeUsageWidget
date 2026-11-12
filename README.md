@@ -16,7 +16,8 @@ Wk 18% Fri 16:19
     `-30m` = you would sit blocked for 30 minutes before the reset.
   - Wk: local time when you will hit the limit (`until Sun 09:00` once it is already reached).
   - `OK`: no usage to forecast from right now.
-- **Click**: details (reset time, pace, forecast). **Drag**: move the strip along the taskbar.
+- **Click**: details (reset time, pace, forecast); close them with the X, Esc, or by switching to
+  any other window. **Drag**: move the strip along the taskbar.
   **Right-click**: refresh, start with Windows, reset position, exit.
 - **Popup warning** for the 5-hour window when the forecast says you will be blocked for at least
   an hour: at 2h, 1h, 30m and 15m before the predicted limit (each threshold once per window).

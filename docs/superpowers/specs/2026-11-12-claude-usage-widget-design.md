@@ -76,7 +76,9 @@ Windows toast), auto-closes after 2 minutes, click opens details. No popup on re
   every second and on every foreground change. Hidden while a full-screen app is in front and
   while an auto-hidden taskbar is hidden.
 - Click: details popup (remaining, reset time and countdown, progress bar, pace with its source,
-  verdict, last update / problem). Verdict wording differs per window:
+  verdict, last update / problem). The popup forces itself to the foreground on open (the strip
+  never activates, so a plain show can leave it inactive) and closes on its X button, Esc, losing
+  activation, or any other window becoming foreground. Verdict wording differs per window:
   - 5-hour: `enough +1h18m` / `tight +20m` / `runs out -30m` - the predicted limit time relative
     to the reset (`+` surplus, `-` time you would sit blocked), shown even when green; plain
     `enough` when there is no burn.

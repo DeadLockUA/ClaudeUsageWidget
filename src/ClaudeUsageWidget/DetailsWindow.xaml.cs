@@ -1,16 +1,25 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using ClaudeUsageWidget.Core;
 
 namespace ClaudeUsageWidget;
 
-/// <summary>Popup with per-window details, shown above the strip; closes when it loses focus.</summary>
+/// <summary>
+/// Popup with per-window details, shown above the strip. Closes on the X button, Esc, losing
+/// activation, or any other window becoming foreground.
+/// </summary>
 public partial class DetailsWindow : Window
 {
     private readonly StripWindow _strip;
     private readonly WidgetController _controller;
+    private readonly Native.WinEventProc _foregroundProc; // kept alive for the native hook
+    private IntPtr _hwnd;
+    private IntPtr _hook;
+    private bool _closing;
     private bool _light;
 
     internal DetailsWindow(StripWindow strip, WidgetController controller)
@@ -18,10 +27,67 @@ public partial class DetailsWindow : Window
         InitializeComponent();
         _strip = strip;
         _controller = controller;
-        Deactivated += (_, _) => Close();
+        _foregroundProc = (_, _, hwnd, _, _, _, _) => OnForegroundChanged(hwnd);
+
+        CloseButton.Click += (_, _) => CloseOnce();
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+                CloseOnce();
+        };
+        Deactivated += (_, _) => CloseOnce();
+        Closing += (_, _) => _closing = true;
+        Closed += (_, _) => Unhook();
         Loaded += (_, _) => PlaceAboveStrip();
         SizeChanged += (_, _) => PlaceAboveStrip();
+        ContentRendered += (_, _) => TakeForeground();
         Render(controller.State);
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        _hwnd = new WindowInteropHelper(this).Handle;
+    }
+
+    /// <summary>
+    /// The strip never activates, so a plain Show() may leave this window inactive; it would then
+    /// never get Deactivated and stay open. Force it to the foreground, then watch foreground
+    /// changes so that switching to any other window closes it even if activation failed.
+    /// </summary>
+    private void TakeForeground()
+    {
+        if (_closing)
+            return;
+        Native.ForceForeground(_hwnd);
+        Activate();
+        // Installed only now so foreground changes from before the popup opened (a closing
+        // context menu or alert) cannot close it straight away.
+        _hook = Native.SetWinEventHook(Native.EVENT_SYSTEM_FOREGROUND, Native.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero,
+            _foregroundProc, 0, 0, Native.WINEVENT_OUTOFCONTEXT);
+    }
+
+    private void OnForegroundChanged(IntPtr foreground)
+    {
+        if (foreground != IntPtr.Zero && foreground != _hwnd)
+            CloseOnce();
+    }
+
+    /// <summary>Several close triggers can fire together; Close() during closing would throw.</summary>
+    private void CloseOnce()
+    {
+        if (_closing)
+            return;
+        _closing = true;
+        Close();
+    }
+
+    private void Unhook()
+    {
+        if (_hook == IntPtr.Zero)
+            return;
+        Native.UnhookWinEvent(_hook);
+        _hook = IntPtr.Zero;
     }
 
     internal void Render(WidgetState state)
@@ -29,6 +95,7 @@ public partial class DetailsWindow : Window
         _light = Theme.TaskbarIsLight();
         Frame.Background = Brush(_light ? 0xF9F9F9 : 0x202020);
         Frame.BorderBrush = Brush(_light ? 0xD0D0D0 : 0x3A3A3A);
+        CloseButton.Foreground = Theme.Muted(_light);
 
         var now = DateTimeOffset.UtcNow;
         Body.Children.Clear();

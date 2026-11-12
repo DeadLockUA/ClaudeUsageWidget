@@ -96,6 +96,50 @@ internal static class Native
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool UnhookWinEvent(IntPtr hook);
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool BringWindowToTop(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool AttachThreadInput(uint attach, uint attachTo, [MarshalAs(UnmanagedType.Bool)] bool doAttach);
+
+    [DllImport("kernel32.dll")]
+    public static extern uint GetCurrentThreadId();
+
+    /// <summary>
+    /// Makes <paramref name="hWnd"/> the foreground window even when the foreground lock would
+    /// refuse a plain SetForegroundWindow, by briefly sharing input state with the current
+    /// foreground thread.
+    /// </summary>
+    public static void ForceForeground(IntPtr hWnd)
+    {
+        var current = GetForegroundWindow();
+        if (hWnd == IntPtr.Zero || current == hWnd)
+            return;
+
+        var self = GetCurrentThreadId();
+        var other = current == IntPtr.Zero ? 0 : GetWindowThreadProcessId(current, out _);
+        var attached = other != 0 && other != self && AttachThreadInput(self, other, true);
+        try
+        {
+            BringWindowToTop(hWnd);
+            SetForegroundWindow(hWnd);
+        }
+        finally
+        {
+            if (attached)
+                AttachThreadInput(self, other, false);
+        }
+    }
+
     public static string ClassOf(IntPtr hWnd)
     {
         var sb = new System.Text.StringBuilder(256);
