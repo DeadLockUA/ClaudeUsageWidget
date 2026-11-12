@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: No Cyrillic in repository
+        shell: pwsh
+        run: ./scripts/check-no-cyrillic.ps1
+
+      - name: No Cyrillic in commit messages
+        shell: pwsh
+        run: |
+          $range = if ('${{ github.event_name }}' -eq 'pull_request') { 'origin/${{ github.base_ref }}..HEAD' } else { '${{ github.event.before }}..HEAD' }
+          if ('${{ github.event.before }}' -match '^0+$') { $range = 'HEAD' }
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git log --format='%h %s%n%b' $range | Set-Content -Encoding utf8 commit-messages.txt
+          ./scripts/check-no-cyrillic.ps1 -MessageFile commit-messages.txt
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Test
+        run: dotnet test --configuration Release
+
+      - name: Publish
+        run: dotnet publish src/GitHubUsageWidget -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GitHubUsageWidget
+          path: publish/GitHubUsageWidget.exe

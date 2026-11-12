@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks commits that add Cyrillic text (repository rule: English only).
+# Enable once per clone:  git config core.hooksPath .githooks
+exec pwsh -NoProfile -File "$(git rev-parse --show-toplevel)/scripts/check-no-cyrillic.ps1" -Staged

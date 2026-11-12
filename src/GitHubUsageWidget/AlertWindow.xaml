@@ -1,0 +1,24 @@
+<Window x:Class="GitHubUsageWidget.AlertWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Claude limit warning"
+        WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize"
+        ShowInTaskbar="False" Topmost="True" ShowActivated="False"
+        Width="340" SizeToContent="Height"
+        Background="Transparent"
+        FontFamily="Segoe UI">
+    <Border x:Name="Frame" CornerRadius="8" BorderThickness="1" Padding="16,12,10,14" Cursor="Hand">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock x:Name="TitleText" FontSize="13" FontWeight="SemiBold"/>
+                <TextBlock x:Name="BodyText" FontSize="13" TextWrapping="Wrap" Margin="0,4,0,0"/>
+            </StackPanel>
+            <Button x:Name="CloseButton" Grid.Column="1" Content="X" Width="24" Height="24" Margin="8,-4,0,0"
+                    VerticalAlignment="Top" Background="Transparent" BorderThickness="0" Cursor="Arrow"/>
+        </Grid>
+    </Border>
+</Window>
